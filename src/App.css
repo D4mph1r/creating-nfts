@@ -1,0 +1,92 @@
+.App {
+  text-align: center;
+}
+
+.App-logo {
+  height: 90vmin;
+  pointer-events: none;
+}
+
+/* @media (prefers-reduced-motion: no-preference) {
+  .App-logo {
+    animation: App-logo-spin infinite 20s linear;
+  }
+} */
+
+.App-header {
+  background-color: #282c34;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  font-size: calc(10px + 2vmin);
+  color: white;
+}
+
+.App-link {
+  color: #61dafb;
+}
+.main {
+  display: flex;
+  flex-direction: row;
+}
+.header {
+  width: 60%;
+  height: auto;
+}
+.side {
+  width: 40%;
+  height: auto;
+}
+.main .side .form-box .lable {
+  margin-top: 1vmax;
+}
+.img-box {
+  width: 853px;
+  height: 853px;
+}
+.form-box {
+  display: flex;
+  justify-content: flex-start;
+  flex-direction: column;
+  padding: 2vmax;
+}
+.copy-text {
+  padding: 2vmax;
+}
+.copy-button {
+  display: flex;
+  justify-content: flex-end;
+}
+.form-box.label {
+  margin: 1vmax;
+}
+.form-box.label .input {
+  margin: 1vmax;
+}
+.container.copy-text {
+  display: flex;
+}
+.container.copy-text.textarea {
+  width: 100%;
+  height: 50vh;
+  border: 2px solid black;
+  padding: 4px;
+  font-size: 14px;
+}
+
+.container.copy-button .button {
+  padding: 11px 22px;
+  background-color: aquamarine;
+  border: none;
+  margin-top: 2vmax;
+}
+@keyframes App-logo-spin {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
