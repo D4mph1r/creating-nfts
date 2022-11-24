@@ -1,22 +1,33 @@
-import React, { useRef, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import "./App.css";
 import mergeImages, { ImageSource } from "merge-images";
 import { Button, Grid } from "@mui/material";
 import { Container } from "@mui/material";
 import TextField from "@mui/material/TextField";
-import TextareaAutosize from "@mui/material/TextareaAutosize";
+import ReactJson from "react-json-view";
+import { sha256 } from "crypto-hash";
 
 function App() {
   const [name, setName] = useState<string>("");
   const [description, setDescription] = useState<string>("");
-  const [token, setToken] = useState<string>("");
+  const [imageURL, setImageURL] = useState<string>("");
   const [isCopied, setIsCopied] = useState(false);
-  const [copyText, setCopyText] = useState<jasonT>({
-    Name: "",
-    tokenId: "",
-    Description: "",
-    attributes: Array(14),
+  const [currImg, setCurrImage] = useState<string>("");
+  const [creator, setCreator] = useState<string>("");
+  const [copyText, setCopyText] = useState<jsonObjT>({
+    name: "Default Name",
+    description: "Default description",
+    image: "Image URL",
+    image_integrity: "sha256 integrity",
+    properties: {
+      creator: "Default creator",
+      created_at: "January 2, 2022",
+      traits: {},
+    },
   });
+  useEffect(() => {
+    setIsCopied(false);
+  }, [copyText]);
   const navigatorTxt = useRef(null);
   const ref = useRef(null);
   let accs: string[] = [];
@@ -59,14 +70,16 @@ function App() {
     return array;
   };
 
-  type jasonT = {
-    Name: string;
-    tokenId: string;
-    Description: string;
-    attributes: {
-      trait_type: string;
-      value: string;
-    }[];
+  type jsonObjT = {
+    name: string;
+    description: string;
+    image: string;
+    image_integrity: string;
+    properties: {
+      creator: string;
+      created_at: string;
+      traits: Record<string, string>;
+    };
   };
   bg = importAll(require.context("./Images/bg", false, /\.(png|jpe?g|svg)$/));
   accs = importAll(
@@ -144,38 +157,55 @@ function App() {
       hairs[getRandomIndex(hairs.length)],
       accs[getRandomIndex(accs.length)],
     ];
+    let b64: string = "";
 
-    const jason: {
-      Name: string;
-      tokenId: string;
-      Description: string;
-      attributes: { trait_type: string; value: string }[];
-    } = {
-      Name: "",
-      tokenId: "",
-      Description: "",
-      attributes: [],
-    };
-
-    jason.Name = name;
-    jason.Description = description;
-
-    DirImages.map((item, index: number) => {
-      jason.attributes.push({
-        trait_type: dirs[index],
-        value: getAttribute(item.toString(), dirs[index]),
-      });
-    });
-    jason.tokenId = token;
-    setCopyText(jason);
     try {
-      const b64 = await mergeImages(DirImages);
+      b64 = await mergeImages(DirImages);
       if (ref.current) {
         (ref.current as any).src = b64;
+        setCurrImage(b64);
       }
     } catch (ex) {
       console.log(ex);
     }
+
+    const jsonObj: jsonObjT = {
+      name: "Default Name",
+      description: "Default description",
+      image: "Image URL",
+      image_integrity: "sha256 integrity",
+      properties: {
+        creator: "Default creator",
+        created_at: "January 2, 2022",
+        traits: {},
+      },
+    };
+
+    jsonObj.name = name;
+    jsonObj.description = description;
+    jsonObj.image = imageURL;
+    jsonObj.properties.creator = creator;
+    jsonObj.properties.created_at = new Date().toDateString();
+    DirImages.map((item, index: number) => {
+      if (
+        dirs[index] !== "Bike" &&
+        dirs[index] !== "Brake" &&
+        dirs[index] !== "bg"
+      )
+        jsonObj.properties.traits[dirs[index]] = getAttribute(
+          item.toString(),
+          dirs[index]
+        );
+    });
+
+    const hashImageBase64 = await sha256(b64);
+    console.log(hashImageBase64);
+    jsonObj.image_integrity = "sha256-" + hashImageBase64;
+
+    // use this in yout metadata.json file
+
+    setCopyText(jsonObj);
+
     // @ts-ignore
     navigatorTxt.current.innerText = copyText;
     var copyText = document.getElementById(".jsonText")?.innerText;
@@ -188,7 +218,7 @@ function App() {
     const js: any = JSON.stringify(copyText);
     var vg = navigatorTxt?.current;
     // @ts-ignore
-    navigator.clipboard.writeText(vg.value as any);
+    navigator.clipboard.writeText(js);
     setIsCopied(true);
   };
 
@@ -197,6 +227,11 @@ function App() {
       <div className="main">
         <header>
           <div className="img-box">
+            {currImg && (
+              <a download={`${name.replaceAll(" ", "-")}.png`} href={currImg}>
+                Download
+              </a>
+            )}
             <img
               alt="logo"
               className="App-logo"
@@ -213,46 +248,61 @@ function App() {
               handleClick();
             }}
           >
-            Click
+            Next Random NFT
           </Button>
         </header>
         <div className="side">
           <form className="form-box">
-            <label>Enter Name:</label>
+            <label>Name:</label>
             <TextField
               size="small"
-              type="text"
               value={name}
               onChange={(e) => setName(e.target.value)}
             />
-            <label>Enter Description:</label>
+            <label>Description:</label>
             <TextField
               size="small"
-              type="description"
               value={description}
               onChange={(e) => setDescription(e.target.value)}
             />
-            <label>Enter Token:</label>
+            <label>Image URL:</label>
             <TextField
               size="small"
-              type="token"
-              value={token}
-              onChange={(e) => setToken(e.target.value)}
+              value={imageURL}
+              onChange={(e) => setImageURL(e.target.value)}
+            />
+            <label>Creator:</label>
+            <TextField
+              size="small"
+              value={creator}
+              onChange={(e) => setCreator(e.target.value)}
             />
           </form>
           <div className="container">
             <div className="copy-text">
-              <TextareaAutosize
-                typeof="any"
-                ref={navigatorTxt}
-                value={copyText.Name ? JSON.stringify(copyText) : "your json "}
-                name="jsonText"
-                id="jsonText"
-                style={{ width: "100%" }}
-                // style={{ width: 200, height: 200 }}
-              ></TextareaAutosize>
+              <ReactJson src={copyText} />
             </div>
             <div className="copy-button">
+              <Button
+                variant="contained"
+                onClick={() => {
+                  setCopyText((prev) => {
+                    return {
+                      ...prev,
+                      name: name,
+                      description: description,
+                      image: imageURL,
+                      properties: {
+                        creator: creator,
+                        created_at: prev.properties.created_at,
+                        traits: prev.properties.traits,
+                      },
+                    };
+                  });
+                }}
+              >
+                <span>Generate JSON</span>
+              </Button>
               <Button variant="contained" onClick={handleCopyClick}>
                 <span>{isCopied ? "Copied!" : "Copy"}</span>
               </Button>
