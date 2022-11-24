@@ -6,6 +6,7 @@ import { Container } from "@mui/material";
 import TextField from "@mui/material/TextField";
 import ReactJson from "react-json-view";
 import { sha256 } from "crypto-hash";
+import moment from "moment";
 
 function App() {
   const [name, setName] = useState<string>("");
@@ -21,7 +22,7 @@ function App() {
     image_integrity: "sha256 integrity",
     properties: {
       creator: "Default creator",
-      created_at: "January 2, 2022",
+      created_at: moment().format('LL').toString(),
       traits: {},
     },
   });
@@ -176,7 +177,7 @@ function App() {
       image_integrity: "sha256 integrity",
       properties: {
         creator: "Default creator",
-        created_at: "January 2, 2022",
+        created_at: moment().format('LL').toString(),
         traits: {},
       },
     };
@@ -185,26 +186,27 @@ function App() {
     jsonObj.description = description;
     jsonObj.image = imageURL;
     jsonObj.properties.creator = creator;
-    jsonObj.properties.created_at = new Date().toDateString();
+    jsonObj.properties.created_at = moment().format('LL').toString();
     DirImages.map((item, index: number) => {
       if (
         dirs[index] !== "Bike" &&
         dirs[index] !== "Brake" &&
         dirs[index] !== "bg"
-      )
+      ){
         jsonObj.properties.traits[dirs[index]] = getAttribute(
           item.toString(),
           dirs[index]
         );
+      }
     });
 
-    const hashImageBase64 = await sha256(b64);
-    console.log(hashImageBase64);
-    jsonObj.image_integrity = "sha256-" + hashImageBase64;
+    setCopyText(jsonObj);
+   console.log(b64);
+   const hashImageBase64 = await sha256(b64);
+   console.log(hashImageBase64);
+   jsonObj.image_integrity = "sha256-" + hashImageBase64;
 
     // use this in yout metadata.json file
-
-    setCopyText(jsonObj);
 
     // @ts-ignore
     navigatorTxt.current.innerText = copyText;
